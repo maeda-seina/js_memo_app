@@ -1,6 +1,7 @@
+const fs = require('fs')
+
 process.stdin.resume()
 process.stdin.setEncoding('utf8')
-
 const lines = []
 const reader = require('readline').createInterface({
   input: process.stdin,
@@ -10,5 +11,5 @@ reader.on('line', (line) => {
   lines.push(line)
 })
 reader.on('close', () => {
-  console.log(lines[0])
+  fs.writeFileSync('./memo.json', JSON.stringify({ memo: lines[0] }))
 })
