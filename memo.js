@@ -1,12 +1,13 @@
-import * as fs from 'fs'
-import * as readline from 'readline'
-import { generateUuid } from './uuid.js'
+const fs = require('fs')
+const generateUuid = require('./uuid')
 const uuid = generateUuid()
+const minimist = require('minimist')
+const argv = minimist(process.argv.slice(2))
 
 process.stdin.resume()
 process.stdin.setEncoding('utf8')
 const lines = []
-const reader = readline.createInterface({
+const reader = require('readline').createInterface({
   input: process.stdin,
   output: process.stdout
 })
@@ -17,3 +18,4 @@ reader.on('close', () => {
   const memo = lines.join('\n')
   fs.writeFileSync(`./${uuid}.json`, JSON.stringify({ memo: memo }))
 })
+console.log(argv)
