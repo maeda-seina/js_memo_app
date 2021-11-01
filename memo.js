@@ -24,8 +24,8 @@ const createMemo = () => {
 const readMemo = () => {
   const jsonFile = fs.readdirSync('memo/')
   jsonFile.forEach(file => {
-    const memoContent = JSON.parse(fs.readFileSync(`./memo/${file}`))
-    const displayContent = memoContent.memo.split('\n')[0]
+    const memoAllContent = JSON.parse(fs.readFileSync(`./memo/${file}`))
+    const displayContent = memoAllContent.memo.split('\n')[0]
     console.log(displayContent)
   })
 }
