@@ -3,6 +3,7 @@ const generateUuid = require('./uuid')
 const uuid = generateUuid()
 const minimist = require('minimist')
 const argv = minimist(process.argv.slice(2))
+const inquirer = require('inquirer')
 
 const createMemo = () => {
   process.stdin.resume()
@@ -30,8 +31,25 @@ const readMemo = () => {
   })
 }
 
+const referMemo = () => {
+  inquirer
+    .prompt([
+      {
+        type: 'list',
+        name: 'memo',
+        message: 'Choose a note you want to see:',
+        choices: [1, 2, 3]
+      }
+    ])
+    .then(answers => {
+      console.info('Memo', answers.memo)
+    })
+}
+
 if (argv.l) {
   readMemo()
+} else if (argv.r) {
+  referMemo()
 } else {
   createMemo()
 }
