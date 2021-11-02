@@ -31,25 +31,35 @@ const readMemo = () => {
   })
 }
 
-const referMemo = () => {
-  inquirer
-    .prompt([
-      {
-        type: 'list',
-        name: 'memo',
-        message: 'Choose a note you want to see:',
-        choices: [1, 2, 3]
-      }
-    ])
-    .then(answers => {
-      console.info('Memo', answers.memo)
-    })
+const createChoices = () => {
+  const choices = []
+  const jsonFiles = fs.readdirSync('memo/')
+  for (const file of jsonFiles) {
+    const contents = JSON.parse(fs.readFileSync(`memo/${file}`, 'utf8'))
+    const content = contents.name.split('\n')[0]
+    choices.push(content)
+  }
+  return choices
 }
+
+const choices = createChoices()
+inquirer
+  .prompt([
+    {
+      type: 'list',
+      name: 'memo',
+      message: 'Choose a note you want to see:',
+      choices: choices
+    }
+  ])
+  .then(answers => {
+    console.info('Memo', answers)
+  })
 
 if (argv.l) {
   readMemo()
 } else if (argv.r) {
-  referMemo()
+  createChoices()
 } else {
   createMemo()
 }
