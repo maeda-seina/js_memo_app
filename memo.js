@@ -26,7 +26,7 @@ const readMemo = () => {
   const jsonFile = fs.readdirSync('memo/')
   jsonFile.forEach(file => {
     const memoAllContent = JSON.parse(fs.readFileSync(`./memo/${file}`))
-    const displayContent = memoAllContent.memo.split('\n')[0]
+    const displayContent = memoAllContent.name.split('\n')[0]
     console.log(displayContent)
   })
 }
@@ -41,25 +41,26 @@ const createChoices = () => {
   }
   return choices
 }
-
-const choices = createChoices()
-inquirer
-  .prompt([
-    {
-      type: 'list',
-      name: 'memo',
-      message: 'Choose a note you want to see:',
-      choices: choices
-    }
-  ])
-  .then(answers => {
-    console.info('Memo', answers)
-  })
+const referMemo = () => {
+  const choices = createChoices()
+  inquirer
+    .prompt([
+      {
+        type: 'list',
+        name: 'memo',
+        message: 'Choose a note you want to see:',
+        choices: choices
+      }
+    ])
+    .then(answers => {
+      console.info('Memo', answers)
+    })
+}
 
 if (argv.l) {
   readMemo()
 } else if (argv.r) {
-  createChoices()
+  referMemo()
 } else {
   createMemo()
 }
