@@ -18,7 +18,7 @@ const createMemo = () => {
   })
   reader.on('close', () => {
     const memo = lines.join('\n')
-    fs.writeFileSync(`./memo/${uuid}.json`, JSON.stringify({ memo: memo }))
+    fs.writeFileSync(`./memo/${uuid}.json`, JSON.stringify({ name: memo }))
   })
 }
 
