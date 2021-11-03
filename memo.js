@@ -41,6 +41,27 @@ const createChoices = () => {
   }
   return choices
 }
+
+const allMemos = () => {
+  const choices = []
+  const jsonFiles = fs.readdirSync('memo/')
+  for (const file of jsonFiles) {
+    const contents = JSON.parse(fs.readFileSync(`memo/${file}`, 'utf8'))
+    choices.push(contents)
+  }
+  return choices
+}
+
+const dependAnswers = (answers) => {
+  const allMemo = allMemos()
+  allMemo.forEach(file => {
+    const oneLine = file.name.split('\n')[0]
+    if (answers === oneLine) {
+      console.log(file.name)
+    }
+  })
+}
+
 const referMemo = () => {
   const choices = createChoices()
   inquirer
@@ -53,7 +74,7 @@ const referMemo = () => {
       }
     ])
     .then(answers => {
-      console.info('Memo', answers)
+      dependAnswers(answers.memo)
     })
 }
 
