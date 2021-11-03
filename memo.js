@@ -52,7 +52,7 @@ const allMemos = () => {
   return choices
 }
 
-const dependAnswers = (answers) => {
+const dependAnswersForRefer = (answers) => {
   const allMemo = allMemos()
   allMemo.forEach(file => {
     const oneLine = file.name.split('\n')[0]
@@ -74,7 +74,55 @@ const referMemo = () => {
       }
     ])
     .then(answers => {
-      dependAnswers(answers.memo)
+      dependAnswersForRefer(answers.memo)
+    })
+}
+
+const createArrayForDelete = () => {
+  const fileObject = []
+  const files = fs.readdirSync('memo/')
+  for (const file of files) {
+    const contents = fs.readFileSync(`memo/${file}`, 'utf8')
+    fileObject[file] = JSON.parse(contents.split('\n')[0])
+  }
+  const arrayForDelete = []
+  for (const fileName in fileObject) {
+    arrayForDelete.push({ fileName: fileName, memo: fileObject[fileName] })
+  }
+  return arrayForDelete
+}
+
+const dependAnswersDelete = (answers) => {
+  const arrayForDelete = createArrayForDelete()
+  arrayForDelete.forEach(file => {
+    if (answers === file.memo.name.split('\n')[0]) {
+      fs.unlink(`memo/${file.fileName}`, function (error) {
+        if (error) {
+          throw error
+        }
+        console.log('削除しました。')
+      })
+    }
+  })
+}
+
+const deleteMemo = () => {
+  const arrayForDelete = createArrayForDelete()
+  arrayForDelete.forEach(file => {
+    console.log(file.memo.name.split('\n')[0])
+  })
+  const choices = createChoices()
+  inquirer
+    .prompt([
+      {
+        type: 'list',
+        name: 'memo',
+        message: 'Choose a note you want to delete:',
+        choices: choices
+      }
+    ])
+    .then(answers => {
+      dependAnswersDelete(answers.memo)
     })
 }
 
@@ -82,6 +130,8 @@ if (argv.l) {
   readMemo()
 } else if (argv.r) {
   referMemo()
+} else if (argv.d) {
+  deleteMemo()
 } else {
   createMemo()
 }
