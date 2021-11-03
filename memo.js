@@ -23,41 +23,41 @@ const createMemo = () => {
 }
 
 const readMemo = () => {
-  const jsonFile = fs.readdirSync('memo/')
-  jsonFile.forEach(file => {
-    const memoAllContent = JSON.parse(fs.readFileSync(`./memo/${file}`))
-    const displayContent = memoAllContent.name.split('\n')[0]
-    console.log(displayContent)
+  const jsonFiles = fs.readdirSync('memo/')
+  jsonFiles.forEach(jsonFile => {
+    const memo = JSON.parse(fs.readFileSync(`./memo/${jsonFile}`))
+    const memoOneLine = memo.name.split('\n')[0]
+    console.log(memoOneLine)
   })
 }
 
 const createChoices = () => {
   const choices = []
   const jsonFiles = fs.readdirSync('memo/')
-  for (const file of jsonFiles) {
-    const contents = JSON.parse(fs.readFileSync(`memo/${file}`, 'utf8'))
-    const content = contents.name.split('\n')[0]
-    choices.push(content)
+  for (const jsonFile of jsonFiles) {
+    const memo = JSON.parse(fs.readFileSync(`memo/${jsonFile}`, 'utf8'))
+    const memoOneLine = memo.name.split('\n')[0]
+    choices.push(memoOneLine)
   }
   return choices
 }
 
 const allMemos = () => {
-  const choices = []
+  const memos = []
   const jsonFiles = fs.readdirSync('memo/')
-  for (const file of jsonFiles) {
-    const contents = JSON.parse(fs.readFileSync(`memo/${file}`, 'utf8'))
-    choices.push(contents)
+  for (const jsonFile of jsonFiles) {
+    const memo = JSON.parse(fs.readFileSync(`memo/${jsonFile}`, 'utf8'))
+    memos.push(memo)
   }
-  return choices
+  return memos
 }
 
 const dependAnswersForRefer = (answers) => {
-  const allMemo = allMemos()
-  allMemo.forEach(file => {
-    const oneLine = file.name.split('\n')[0]
-    if (answers === oneLine) {
-      console.log(file.name)
+  const memos = allMemos()
+  memos.forEach(memo => {
+    const memoOneLine = memo.name.split('\n')[0]
+    if (answers === memoOneLine) {
+      console.log(memo.name)
     }
   })
 }
@@ -78,24 +78,25 @@ const referMemo = () => {
     })
 }
 
-const createArrayForDelete = () => {
-  const fileObject = []
-  const files = fs.readdirSync('memo/')
-  for (const file of files) {
-    const contents = fs.readFileSync(`memo/${file}`, 'utf8')
-    fileObject[file] = JSON.parse(contents.split('\n')[0])
+const createArrayOfMemoWithFileName = () => {
+  const memoWithFileName = []
+  const jsonFiles = fs.readdirSync('memo/')
+  for (const jsonFile of jsonFiles) {
+    const memo = fs.readFileSync(`memo/${jsonFile}`, 'utf8')
+    memoWithFileName[jsonFile] = JSON.parse(memo.split('\n')[0])
   }
-  const arrayForDelete = []
-  for (const fileName in fileObject) {
-    arrayForDelete.push({ fileName: fileName, memo: fileObject[fileName] })
+  const formatMemoWithFileName = []
+  for (const fileName in memoWithFileName) {
+    formatMemoWithFileName.push({ fileName: fileName, memo: memoWithFileName[fileName] })
   }
-  return arrayForDelete
+  return formatMemoWithFileName
 }
 
-const dependAnswersDelete = (answers) => {
-  const arrayForDelete = createArrayForDelete()
-  arrayForDelete.forEach(file => {
-    if (answers === file.memo.name.split('\n')[0]) {
+const dependAnswersForDelete = (answers) => {
+  const memoWithFileName = createArrayOfMemoWithFileName()
+  memoWithFileName.forEach(file => {
+    const memoOneLine = file.memo.name.split('\n')[0]
+    if (answers === memoOneLine) {
       fs.unlink(`memo/${file.fileName}`, function (error) {
         if (error) {
           throw error.message
@@ -118,7 +119,7 @@ const deleteMemo = () => {
       }
     ])
     .then(answers => {
-      dependAnswersDelete(answers.memo)
+      dependAnswersForDelete(answers.memo)
     })
 }
 
