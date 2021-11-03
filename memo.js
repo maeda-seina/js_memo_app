@@ -98,19 +98,15 @@ const dependAnswersDelete = (answers) => {
     if (answers === file.memo.name.split('\n')[0]) {
       fs.unlink(`memo/${file.fileName}`, function (error) {
         if (error) {
-          throw error
+          throw error.message
         }
-        console.log('削除しました。')
+        console.log('選択したメモを削除しました。')
       })
     }
   })
 }
 
 const deleteMemo = () => {
-  const arrayForDelete = createArrayForDelete()
-  arrayForDelete.forEach(file => {
-    console.log(file.memo.name.split('\n')[0])
-  })
   const choices = createChoices()
   inquirer
     .prompt([
