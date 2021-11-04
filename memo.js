@@ -39,7 +39,7 @@ class Memo {
     this.jsonObject = new Json()
   }
 
-  createMemo () {
+  create () {
     process.stdin.resume()
     process.stdin.setEncoding('utf8')
     const lines = []
@@ -56,7 +56,7 @@ class Memo {
     })
   }
 
-  listMemo () {
+  list () {
     const jsonFiles = this.jsonObject.readDir()
     jsonFiles.forEach(jsonFile => {
       const memo = this.jsonObject.parseMemo(this.jsonObject.readFile(jsonFile))
@@ -96,7 +96,7 @@ class Memo {
     })
   }
 
-  referMemo () {
+  refer () {
     const choices = this.createChoice()
     inquirer
       .prompt([
@@ -136,7 +136,7 @@ class Memo {
     })
   }
 
-  deleteMemo () {
+  delete () {
     const choices = this.createChoice()
     inquirer
       .prompt([
@@ -161,13 +161,13 @@ class Command {
 
   main () {
     if (argv.l) {
-      this.memo.listMemo()
+      this.memo.list()
     } else if (argv.r) {
-      this.memo.referMemo()
+      this.memo.refer()
     } else if (argv.d) {
-      this.memo.deleteMemo()
+      this.memo.delete()
     } else {
-      this.memo.createMemo()
+      this.memo.create()
     }
   }
 }
