@@ -5,130 +5,170 @@ const minimist = require('minimist')
 const argv = minimist(process.argv.slice(2))
 const inquirer = require('inquirer')
 
-const createMemo = () => {
-  process.stdin.resume()
-  process.stdin.setEncoding('utf8')
-  const lines = []
-  const reader = require('readline').createInterface({
-    input: process.stdin,
-    output: process.stdout
-  })
-  reader.on('line', (line) => {
-    lines.push(line)
-  })
-  reader.on('close', () => {
-    const memo = lines.join('\n')
+// Jsonファイルの操作など任せたい
+class Json {
+  readDir () {
+    return fs.readdirSync('./memo/')
+  }
+
+  readFile (path) {
+    return fs.readFileSync(`./memo/${path}`, 'utf8')
+  }
+
+  writeMemo (memo) {
     fs.writeFileSync(`./memo/${uuid}.json`, JSON.stringify({ name: memo }))
-  })
-}
-
-const readMemo = () => {
-  const jsonFiles = fs.readdirSync('memo/')
-  jsonFiles.forEach(jsonFile => {
-    const memo = JSON.parse(fs.readFileSync(`./memo/${jsonFile}`))
-    const memoOneLine = memo.name.split('\n')[0]
-    console.log(memoOneLine)
-  })
-}
-
-const createChoices = () => {
-  const choices = []
-  const jsonFiles = fs.readdirSync('memo/')
-  for (const jsonFile of jsonFiles) {
-    const memo = JSON.parse(fs.readFileSync(`memo/${jsonFile}`, 'utf8'))
-    const memoOneLine = memo.name.split('\n')[0]
-    choices.push(memoOneLine)
   }
-  return choices
-}
 
-const allMemos = () => {
-  const memos = []
-  const jsonFiles = fs.readdirSync('memo/')
-  for (const jsonFile of jsonFiles) {
-    const memo = JSON.parse(fs.readFileSync(`memo/${jsonFile}`, 'utf8'))
-    memos.push(memo)
+  parseMemo (file) {
+    return JSON.parse(file)
   }
-  return memos
-}
 
-const dependAnswersForRefer = (answers) => {
-  const memos = allMemos()
-  memos.forEach(memo => {
-    const memoOneLine = memo.name.split('\n')[0]
-    if (answers === memoOneLine) {
-      console.log(memo.name)
-    }
-  })
-}
-
-const referMemo = () => {
-  const choices = createChoices()
-  inquirer
-    .prompt([
-      {
-        type: 'list',
-        name: 'memo',
-        message: 'Choose a note you want to see:',
-        choices: choices
+  deleteFile (path) {
+    return fs.unlink(`memo/${path}`, function (error) {
+      if (error) {
+        throw error.message
       }
-    ])
-    .then(answers => {
-      dependAnswersForRefer(answers.memo)
+      console.log('選択したメモを削除しました。')
     })
+  }
 }
 
-const createArrayOfMemoWithFileName = () => {
-  const memoWithFileName = []
-  const jsonFiles = fs.readdirSync('memo/')
-  for (const jsonFile of jsonFiles) {
-    const memo = fs.readFileSync(`memo/${jsonFile}`, 'utf8')
-    memoWithFileName[jsonFile] = JSON.parse(memo.split('\n')[0])
+// メモの操作など任せたい
+class Memo {
+  constructor () {
+    this.jsonObject = new Json()
   }
-  const formatMemoWithFileName = []
-  for (const fileName in memoWithFileName) {
-    formatMemoWithFileName.push({ fileName: fileName, memo: memoWithFileName[fileName] })
-  }
-  return formatMemoWithFileName
-}
 
-const dependAnswersForDelete = (answers) => {
-  const memoWithFileName = createArrayOfMemoWithFileName()
-  memoWithFileName.forEach(file => {
-    const memoOneLine = file.memo.name.split('\n')[0]
-    if (answers === memoOneLine) {
-      fs.unlink(`memo/${file.fileName}`, function (error) {
-        if (error) {
-          throw error.message
+  create () {
+    process.stdin.resume()
+    process.stdin.setEncoding('utf8')
+    const lines = []
+    const reader = require('readline').createInterface({
+      input: process.stdin,
+      output: process.stdout
+    })
+    reader.on('line', (line) => {
+      lines.push(line)
+    })
+    reader.on('close', () => {
+      const memo = lines.join('\n')
+      this.jsonObject.writeMemo(memo)
+    })
+  }
+
+  list () {
+    const jsonFiles = this.jsonObject.readDir()
+    jsonFiles.forEach(jsonFile => {
+      const memo = this.jsonObject.parseMemo(this.jsonObject.readFile(jsonFile))
+      const memoOneLine = memo.name.split('\n')[0]
+      console.log(memoOneLine)
+    })
+  }
+
+  createChoice () {
+    const choices = []
+    const jsonFiles = this.jsonObject.readDir()
+    for (const jsonFile of jsonFiles) {
+      const memo = this.jsonObject.parseMemo(this.jsonObject.readFile(jsonFile))
+      const memoOneLine = memo.name.split('\n')[0]
+      choices.push(memoOneLine)
+    }
+    return choices
+  }
+
+  allMemos () {
+    const memos = []
+    const jsonFiles = this.jsonObject.readDir()
+    for (const jsonFile of jsonFiles) {
+      const memo = this.jsonObject.parseMemo(this.jsonObject.readFile(jsonFile))
+      memos.push(memo)
+    }
+    return memos
+  }
+
+  dependAnswersForRefer (answers) {
+    const memos = this.allMemos()
+    memos.forEach(memo => {
+      const memoOneLine = memo.name.split('\n')[0]
+      if (answers === memoOneLine) {
+        console.log(memo.name)
+      }
+    })
+  }
+
+  refer () {
+    const choices = this.createChoice()
+    inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'memo',
+          message: 'Choose a note you want to see:',
+          choices: choices
         }
-        console.log('選択したメモを削除しました。')
+      ])
+      .then(answers => {
+        this.dependAnswersForRefer(answers.memo)
       })
+  }
+
+  createArrayOfMemoWithFileName () {
+    const memoWithFileName = []
+    const jsonFiles = this.jsonObject.readDir()
+    for (const jsonFile of jsonFiles) {
+      const memo = this.jsonObject.readFile(jsonFile)
+      memoWithFileName[jsonFile] = this.jsonObject.parseMemo(memo.split('\n')[0])
     }
-  })
-}
+    const formatMemoWithFileName = []
+    for (const fileName in memoWithFileName) {
+      formatMemoWithFileName.push({ fileName: fileName, memo: memoWithFileName[fileName] })
+    }
+    return formatMemoWithFileName
+  }
 
-const deleteMemo = () => {
-  const choices = createChoices()
-  inquirer
-    .prompt([
-      {
-        type: 'list',
-        name: 'memo',
-        message: 'Choose a note you want to delete:',
-        choices: choices
+  dependAnswersForDelete (answers) {
+    const memoWithFileName = this.createArrayOfMemoWithFileName()
+    memoWithFileName.forEach(file => {
+      const memoOneLine = file.memo.name.split('\n')[0]
+      if (answers === memoOneLine) {
+        this.jsonObject.deleteFile(file.fileName)
       }
-    ])
-    .then(answers => {
-      dependAnswersForDelete(answers.memo)
     })
+  }
+
+  delete () {
+    const choices = this.createChoice()
+    inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'memo',
+          message: 'Choose a note you want to delete:',
+          choices: choices
+        }
+      ])
+      .then(answers => {
+        this.dependAnswersForDelete(answers.memo)
+      })
+  }
 }
 
-if (argv.l) {
-  readMemo()
-} else if (argv.r) {
-  referMemo()
-} else if (argv.d) {
-  deleteMemo()
-} else {
-  createMemo()
+// コマンド操作
+class Command {
+  constructor () {
+    this.memo = new Memo()
+  }
+
+  main () {
+    if (argv.l) {
+      this.memo.list()
+    } else if (argv.r) {
+      this.memo.refer()
+    } else if (argv.d) {
+      this.memo.delete()
+    } else {
+      this.memo.create()
+    }
+  }
 }
+new Command().main()
