@@ -5,32 +5,101 @@ const minimist = require('minimist')
 const argv = minimist(process.argv.slice(2))
 const inquirer = require('inquirer')
 
-const createMemo = () => {
-  process.stdin.resume()
-  process.stdin.setEncoding('utf8')
-  const lines = []
-  const reader = require('readline').createInterface({
-    input: process.stdin,
-    output: process.stdout
-  })
-  reader.on('line', (line) => {
-    lines.push(line)
-  })
-  reader.on('close', () => {
-    const memo = lines.join('\n')
+// Jsonファイルの取り出しなど任せたい
+class Json {
+  readDir () {
+    return fs.readdirSync('./memo/')
+  }
+
+  readFile (path) {
+    return fs.readFileSync(`./memo/${path}`, 'utf8')
+  }
+
+  writeMemo (memo) {
     fs.writeFileSync(`./memo/${uuid}.json`, JSON.stringify({ name: memo }))
-  })
+  }
+
+  parseMemo (path) {
+    return JSON.parse(this.readFile(path))
+  }
 }
 
-const readMemo = () => {
-  const jsonFiles = fs.readdirSync('memo/')
-  jsonFiles.forEach(jsonFile => {
-    const memo = JSON.parse(fs.readFileSync(`./memo/${jsonFile}`))
-    const memoOneLine = memo.name.split('\n')[0]
-    console.log(memoOneLine)
-  })
+// メモを作成したり、削除したりするのはここで行う。
+class Memo {
+  constructor () {
+    this.jsonObject = new Json()
+  }
+
+  createMemo () {
+    process.stdin.resume()
+    process.stdin.setEncoding('utf8')
+    const lines = []
+    const reader = require('readline').createInterface({
+      input: process.stdin,
+      output: process.stdout
+    })
+    reader.on('line', (line) => {
+      lines.push(line)
+    })
+    reader.on('close', () => {
+      const memo = lines.join('\n')
+      this.jsonObject.writeMemo(memo)
+    })
+  }
+
+  readMemo () {
+    const jsonFiles = this.jsonObject.readDir()
+    jsonFiles.forEach(jsonFile => {
+      // const memo = JSON.parse(this.jsonObject.readFile(jsonFile))
+      const memo = this.jsonObject.parseMemo(jsonFile)
+      const memoOneLine = memo.name.split('\n')[0]
+      console.log(memoOneLine)
+    })
+  }
 }
 
+class Command {
+  constructor () {
+    this.memo = new Memo()
+  }
+
+  run () {
+    if (argv.l) {
+      this.memo.readMemo()
+    } else {
+      this.memo.createMemo()
+    }
+  }
+}
+new Command().run()
+
+// const createMemo = () => {
+//   process.stdin.resume()
+//   process.stdin.setEncoding('utf8')
+//   const lines = []
+//   const reader = require('readline').createInterface({
+//     input: process.stdin,
+//     output: process.stdout
+//   })
+//   reader.on('line', (line) => {
+//     lines.push(line)
+//   })
+//   reader.on('close', () => {
+//     const memo = lines.join('\n')
+//     fs.writeFileSync(`./memo/${uuid}.json`, JSON.stringify({ name: memo }))
+//   })
+// }
+
+// const readMemo = () => {
+//   const jsonFiles = fs.readdirSync('memo/')
+//   jsonFiles.forEach(jsonFile => {
+//     const memo = JSON.parse(fs.readFileSync(`./memo/${jsonFile}`))
+//     const memoOneLine = memo.name.split('\n')[0]
+//     console.log(memoOneLine)
+//   })
+// }
+
+// rオプション(参照機能)
 const createChoices = () => {
   const choices = []
   const jsonFiles = fs.readdirSync('memo/')
@@ -78,6 +147,7 @@ const referMemo = () => {
     })
 }
 
+// dオプション(削除機能)
 const createArrayOfMemoWithFileName = () => {
   const memoWithFileName = []
   const jsonFiles = fs.readdirSync('memo/')
@@ -89,6 +159,7 @@ const createArrayOfMemoWithFileName = () => {
   for (const fileName in memoWithFileName) {
     formatMemoWithFileName.push({ fileName: fileName, memo: memoWithFileName[fileName] })
   }
+  console.log(formatMemoWithFileName)
   return formatMemoWithFileName
 }
 
@@ -123,12 +194,12 @@ const deleteMemo = () => {
     })
 }
 
-if (argv.l) {
-  readMemo()
-} else if (argv.r) {
-  referMemo()
-} else if (argv.d) {
-  deleteMemo()
-} else {
-  createMemo()
-}
+// if (argv.l) {
+//   readMemo()
+// } else if (argv.r) {
+//   referMemo()
+// } else if (argv.d) {
+//   deleteMemo()
+// } else {
+//   createMemo()
+// }
