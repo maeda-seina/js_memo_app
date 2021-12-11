@@ -26,4 +26,6 @@
 
 選んだメモが削除される。
 
+`node memo.js -d`
+
 [![Image from Gyazo](https://i.gyazo.com/a73cd1094f7c6be99a4c742b544554f9.gif)](https://gyazo.com/a73cd1094f7c6be99a4c742b544554f9)
